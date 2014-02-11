@@ -547,6 +547,8 @@ public class CacheManager implements Runnable, ResourceChangedListener,  Resourc
             "( "+CacheTableManager.FIELD_DTEND+" - "+offsetS+" > "+dtStart+" AND "+CacheTableManager.FIELD_DTEND_FLOAT+" )"+
                 " OR "+
             "( "+CacheTableManager.FIELD_DTEND+" ISNULL )"+
+                " OR "+
+            "( "+CacheTableManager.FIELD_DTEND+" <= "+CacheTableManager.FIELD_DTSTART+" AND "+CacheTableManager.FIELD_DTSTART+" >= "+dtStart+" )"+
         " ) AND ( "+
             "( "+CacheTableManager.FIELD_DTSTART+" < "+dtEnd+" AND NOT "+CacheTableManager.FIELD_DTSTART_FLOAT+" )"+
                 " OR "+
