@@ -18,6 +18,9 @@
 
 package com.morphoss.acal.activity;
 
+import java.util.Map;
+import java.util.LinkedHashMap;
+
 import android.app.ListActivity;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -37,25 +40,49 @@ import com.morphoss.acal.service.SyncChangesToServer;
 import com.morphoss.acal.service.WorkerClass;
 
 public class DebugSettings extends ListActivity {
-public static final String TAG = "aCal Settings";
+	public static final String TAG = "aCal Debug Settings";
 
-	/** A list of setting that can be configured in DEBUG mode */
-	private static final String[] TASKS = new String[] {
-		"Save Database",
-		"Revert Database",
-		"Full System Sync",
-		"Home Set Discovery",
-		"Update Home DavCollections",
-		"Sync All DavCollections",
-		"Clear Cache",
-		"Sync local changes to server",
-		"Log current alarm queue",
-		"Rebuild alarm queue"
+	abstract private class ExceptionRunnable {
+		abstract public void run() throws Throwable;
 	};
 
+	/** A list of setting that can be configured in DEBUG mode */
+	private final Map<String, ExceptionRunnable> TASKS = new LinkedHashMap<String, ExceptionRunnable>() {
+		public static final long serialVersionUID = 1;
+	{
+		put("Save Database", new ExceptionRunnable() { public void run() throws RemoteException {
+			DebugSettings.this.serviceManager.getServiceRequest().saveDatabase();
+		}});
+		put("Revert Database", new ExceptionRunnable() { public void run() throws RemoteException {
+			DebugSettings.this.serviceManager.getServiceRequest().revertDatabase();
+		}});
+		put("Full System Sync", new ExceptionRunnable() { public void run() throws RemoteException {
+			DebugSettings.this.serviceManager.getServiceRequest().fullResync();
+		}});
+		put("Home Set Discovery", new ExceptionRunnable() { public void run() throws RemoteException {
+			DebugSettings.this.serviceManager.getServiceRequest().discoverHomeSets();
+		}});
+		put("Update Home DavCollections", new ExceptionRunnable() { public void run() throws RemoteException {
+			DebugSettings.this.serviceManager.getServiceRequest().updateCollectionsFromHomeSets();
+		}});
+		put("Clear Cache", new ExceptionRunnable() { public void run() {
+			CacheManager.getInstance(DebugSettings.this).sendRequest(new CRClearCacheRequest());
+		}});
+		put("Sync local changes to server", new ExceptionRunnable() { public void run() {
+			WorkerClass.getExistingInstance().addJobAndWake(new SyncChangesToServer());
+		}});
+		put("Log current alarm queue", new ExceptionRunnable() { public void run() {
+			AlarmQueueManager.logCurrentAlarms(DebugSettings.this);
+		}});
+		put("Rebuild alarm queue", new ExceptionRunnable() { public void run() {
+			AlarmQueueManager.logCurrentAlarms(DebugSettings.this);
+			AlarmQueueManager.rebuildAlarmQueue(DebugSettings.this);
+			AlarmQueueManager.logCurrentAlarms(DebugSettings.this);
+		}});
+	}};
+	private final String[] TASK_NAMES = TASKS.keySet().toArray(new String[0]);
+
 	private ServiceManager serviceManager;
-
-
 
 	/**
 	 * <p>Creates a list of debug settings.</p>
@@ -65,7 +92,7 @@ public static final String TAG = "aCal Settings";
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, TASKS));
+		setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, TASK_NAMES));
 		ListView lv = getListView();
 		lv.setTextFilterEnabled(true);
 		lv.setOnItemClickListener(new SettingsListClickListener());
@@ -83,79 +110,17 @@ public static final String TAG = "aCal Settings";
 		this.serviceManager = new ServiceManager(this);
 	}
 
-
-
 	/**
 	 * Click listener for Settings List.
-	 *
-	 * @author Morphoss Ltd
 	 */
-
 	private class SettingsListClickListener implements OnItemClickListener {
-
-		/**
-		 * @see android.widget.AdapterView.OnItemClickListener#onItemClick(android.widget.AdapterView, android.view.View, int, long)
-		 */
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			String task = TASKS[position];
-			if (task.equals("Save Database")){
-	    		try {
-	    			DebugSettings.this.serviceManager.getServiceRequest().saveDatabase();
-	    			return;
-	    		} catch (RemoteException re) {
-	    			Log.e(TAG, "Unable to send save database request to server: "+re.getMessage());
-	    			Toast.makeText(DebugSettings.this, "Request failed: "+re.getMessage(), Toast.LENGTH_SHORT).show();
-	    		}
-	    	}
-			else if (task.equals("Revert Database")){
-	    		try {
-	    			DebugSettings.this.serviceManager.getServiceRequest().revertDatabase();
-	    			return;
-	    		} catch (RemoteException re) {
-	    			Log.e(TAG, "Unable to send Revert Database request to server: "+re.getMessage());
-	    			Toast.makeText(DebugSettings.this, "Request failed: "+re.getMessage(), Toast.LENGTH_SHORT).show();
-	    		}
-	    	}
-			else if (task.equals("Full System Sync")) {
-	    		try {
-	    			DebugSettings.this.serviceManager.getServiceRequest().fullResync();
-	    			return;
-	    		} catch (RemoteException re) {
-	    			Log.e(TAG, "Unable to send Full System Sync request to server: "+re.getMessage());
-	    			Toast.makeText(DebugSettings.this, "Request failed: "+re.getMessage(), Toast.LENGTH_SHORT).show();
-	    		}
-	    	}
-			else if (task.equals("Home Set Discovery")) {
-	    		try {
-	    			DebugSettings.this.serviceManager.getServiceRequest().discoverHomeSets();
-	    			return;
-	    		} catch (RemoteException re) {
-	    			Log.e(TAG, "Unable to send Home Set Discovery request to server: "+re.getMessage());
-	    			Toast.makeText(DebugSettings.this, "Request failed: "+re.getMessage(), Toast.LENGTH_SHORT).show();
-	    		}
-	    	}
-			else if (task.equals("Update Home DavCollections")) {
-	    		try {
-	    			DebugSettings.this.serviceManager.getServiceRequest().updateCollectionsFromHomeSets();
-	    			return;
-	    		} catch (RemoteException re) {
-	    			Log.e(TAG, "Unable to send Update Home DavCollections request to server: "+re.getMessage());
-	    			Toast.makeText(DebugSettings.this, "Request failed: "+re.getMessage(), Toast.LENGTH_SHORT).show();
-	    		}
-	    	} else if (task.equals("Clear Cache")) {
-	    		CacheManager.getInstance(DebugSettings.this).sendRequest(new CRClearCacheRequest());
-	    	}
-	    	else if ( task.equals("Sync local changes to server") ) {
-				WorkerClass.getExistingInstance().addJobAndWake(new SyncChangesToServer());
-	    	}
-	    	else if ( task.equals("Log current alarm queue") ) {
-	    	    AlarmQueueManager.logCurrentAlarms(DebugSettings.this);
-	    	}
-            else if ( task.equals("Rebuild alarm queue") ) {
-                AlarmQueueManager.logCurrentAlarms(DebugSettings.this);
-                AlarmQueueManager.rebuildAlarmQueue(DebugSettings.this);
-                AlarmQueueManager.logCurrentAlarms(DebugSettings.this);
-            }
+			try {
+				TASKS.get(TASK_NAMES[position]).run();
+			} catch (Throwable t) {
+				Log.e(TAG, "Unable to execute " + TASK_NAMES[position] + ": " + t.getMessage());
+				Toast.makeText(DebugSettings.this, "Request failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+			}
 		}
 	}
 }
