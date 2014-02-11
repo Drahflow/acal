@@ -655,7 +655,6 @@ public class MonthView extends AcalActivity implements OnGestureListener,
 			if (monthAdapter != null) monthAdapter.close();
 			monthAdapter = new MonthAdapter(this, displayedMonth, selectedDate,new Animation[]{leftIn,leftOut,rightIn,rightOut});
 			monthGrid.setAdapter(monthAdapter);
-			monthGrid.setAdapter(monthAdapter);
 		}
 		monthGrid.refreshDrawableState();
 	}

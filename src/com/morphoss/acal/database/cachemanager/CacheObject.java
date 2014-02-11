@@ -35,6 +35,8 @@ public class CacheObject implements Parcelable, Comparable<CacheObject> {
 	private final boolean completeFloating;
 	private final long completed;
 	private final int flags;
+	private AcalDateTime startTime = null;
+	private AcalDateTime endTime = null;
 	
 	public static final int HAS_ALARM_FLAG = 		1;
 	public static final int RECURS_FLAG =			1<<1;
@@ -351,12 +353,14 @@ public class CacheObject implements Parcelable, Comparable<CacheObject> {
 
 	public AcalDateTime getStartDateTime() {
 		if ( start == Long.MAX_VALUE ) return null;
-		return AcalDateTime.localTimeFromMillis(start,startFloating);
+		if ( startTime == null ) startTime = AcalDateTime.localTimeFromMillis(start,startFloating);
+		return startTime;
 	}
 
 	public AcalDateTime getEndDateTime() {
 		if ( end == Long.MAX_VALUE ) return null;
-		return AcalDateTime.localTimeFromMillis(end,endFloating);
+		if ( endTime == null ) endTime = AcalDateTime.localTimeFromMillis(end,endFloating);
+		return endTime;
 	}
 
 	public AcalDateTime getCompletedDateTime() {

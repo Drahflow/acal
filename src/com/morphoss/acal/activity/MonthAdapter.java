@@ -183,7 +183,7 @@ public class MonthAdapter extends BaseAdapter implements CacheChangedListener, C
 
 	public long getItemId(int position) { return 0; }
 
-	public View getView(int position, View contentView, ViewGroup parent) {
+	public View getView(int position, View convertView, ViewGroup parent) {
 
 		int gridHeight = 0;
 		int headerHeight = 0;
