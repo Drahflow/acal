@@ -183,6 +183,21 @@ public class WorkerClass implements Runnable {
 		this.runWorker.open();
 	}
 
+	/**
+	 * Immediately execute all remaining jobs in the calling thread.
+	 */
+	public synchronized void executeAllJobs() {
+		// make a new queue in case executing jobs reschedule themselves
+		PriorityQueue<ServiceJob> currentJobs = jobQueue;
+		jobQueue = new PriorityQueue<ServiceJob>();
+
+		for(ServiceJob job: currentJobs) {
+			Log.i(TAG, "Immediately executing job " + job.getDescription() == null? "<null>": job.getDescription());
+			job.run(this.context);
+			timeOfLastAction = System.currentTimeMillis();
+		}
+	}
+
 	private synchronized ServiceJob getJob() {
 		if ( jobQueue.isEmpty() ) {
 			runWorker.close();

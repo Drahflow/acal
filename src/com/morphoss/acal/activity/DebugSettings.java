@@ -50,6 +50,16 @@ public class DebugSettings extends ListActivity {
 	private final Map<String, ExceptionRunnable> TASKS = new LinkedHashMap<String, ExceptionRunnable>() {
 		public static final long serialVersionUID = 1;
 	{
+		put("Immediate: Sync local changes to server", new ExceptionRunnable() { public void run() {
+			WorkerClass.getExistingInstance().addJobAndWake(new SyncChangesToServer());
+			WorkerClass.getExistingInstance().executeAllJobs();
+			Toast.makeText(DebugSettings.this, "Synced", Toast.LENGTH_SHORT).show();
+		}});
+		put("Immediate: Full sync from server", new ExceptionRunnable() { public void run() throws RemoteException {
+			DebugSettings.this.serviceManager.getServiceRequest().fullResync();
+			WorkerClass.getExistingInstance().executeAllJobs();
+			Toast.makeText(DebugSettings.this, "Synced", Toast.LENGTH_SHORT).show();
+		}});
 		put("Save Database", new ExceptionRunnable() { public void run() throws RemoteException {
 			DebugSettings.this.serviceManager.getServiceRequest().saveDatabase();
 		}});
