@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.HashMap;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -151,6 +153,7 @@ public class AcalDateTime implements Parcelable, Serializable, Cloneable, Compar
 	protected TimeZone tz = null;
 	protected String tzName = null;
 
+	private static Map<String, TimeZone> timeZoneCache = new HashMap<String, TimeZone>();
 
 	/**
 	 * <p>
@@ -228,7 +231,7 @@ public class AcalDateTime implements Parcelable, Serializable, Cloneable, Compar
 		this.second = (short) second;
 
 		if ( tzName != null ) {
-			tz = TimeZone.getTimeZone(tzName);
+			tz = getTimeZone(tzName);
 			if ( tz != null ) this.tzName = tzName;
 		}
 		epoch = EPOCH_NOT_SET;
@@ -377,7 +380,7 @@ public class AcalDateTime implements Parcelable, Serializable, Cloneable, Compar
         }
 		try {
             tzName = VCalendar.staticGetOlsonName(newTzName);
-            tz = TimeZone.getTimeZone(tzName);
+            tz = getTimeZone(tzName);
         }
         catch ( UnrecognisedTimeZone e ) {
             Log.w(TAG,"Unrecognised Timezone '"+newTzName+"'");
@@ -915,6 +918,15 @@ public class AcalDateTime implements Parcelable, Serializable, Cloneable, Compar
 		return tz;
 	}
 
+	/**
+	 * Resolve a timezone.
+	 */
+	private TimeZone getTimeZone(String name) {
+		if(timeZoneCache.get(name) == null) {
+			timeZoneCache.put(name, TimeZone.getTimeZone(name));
+		}
+		return timeZoneCache.get(name);
+	}
 
 	/**
 	 * <p>

@@ -202,9 +202,7 @@ public class MonthAdapter extends BaseAdapter implements CacheChangedListener, C
 		if (position <7) {
 			//Column headers
 			LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			TextView dayColumnHeader = null;
-			View v = (View) inflater.inflate(R.layout.month_view_assets, null);
-			dayColumnHeader = (TextView) v.findViewById(R.id.DayColumnHeader);
+		  TextView dayColumnHeader = (TextView) inflater.inflate(R.layout.month_view_header, null);
 
 			int day = (position+firstCol)%7;
 			String colText = "";
@@ -221,17 +219,11 @@ public class MonthAdapter extends BaseAdapter implements CacheChangedListener, C
 			dayColumnHeader.setText(colText);
 			dayColumnHeader.setTextSize( TypedValue.COMPLEX_UNIT_PX, (float) 0.55 * boxScaleFactor * headerHeight);
 			
-			ViewParent vp = dayColumnHeader.getParent();
-			if ( vp instanceof View ) {
-				((View) vp).setBackgroundColor(AcalTheme.getElementColour(AcalTheme.BUTTON));
-				dayColumnHeader.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.dayheadings_fg));
-				dayColumnHeader.setTextColor(AcalTheme.pickForegroundForBackground(AcalTheme.getElementColour(AcalTheme.BUTTON)));
-			}
+			dayColumnHeader.setBackgroundColor(AcalTheme.getElementColour(AcalTheme.BUTTON));
+			dayColumnHeader.setTextColor(AcalTheme.pickForegroundForBackground(AcalTheme.getElementColour(AcalTheme.BUTTON)));
 			
 			if ( headerHeight != 0 ) dayColumnHeader.setHeight(headerHeight - dayColumnHeader.getCompoundPaddingBottom());
-
-			dayColumnHeader.setVisibility(View.VISIBLE);
-			return v;
+			return dayColumnHeader;
 		}
 
 		position -=7;
@@ -260,19 +252,18 @@ public class MonthAdapter extends BaseAdapter implements CacheChangedListener, C
 			bDate.setMonthDay(position-offset+1);
 		}
 		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		View v = (View) inflater.inflate(R.layout.month_view_assets, null);
 		
 		MonthDayBox mDayBox = null; 
 		float textScaleFactor = 0.0f;
 		short mDay = bDate.getMonthDay();
 		if ( inMonth ) {
 			if ( bDate.getYearDay() == selectedDate.getYearDay() && bDate.getYear() == selectedDate.getYear() ) {
-				mDayBox = (MonthDayBox) v.findViewById(R.id.DayBoxHighlightDay);
+				mDayBox = (MonthDayBox) inflater.inflate(R.layout.month_view_highlight, null);
 				textScaleFactor = 0.6f;
 				mDayBox.setSelected();
 			}
 			else {
-				mDayBox = (MonthDayBox) v.findViewById(R.id.DayBoxInMonth);
+				mDayBox = (MonthDayBox) inflater.inflate(R.layout.month_view_inmonth, null);
 				textScaleFactor = 0.55f;
 			}
 			if ( Constants.LOG_VERBOSE && Constants.debugMonthView ) {
@@ -285,11 +276,11 @@ public class MonthAdapter extends BaseAdapter implements CacheChangedListener, C
 			mDayBox.setEvents(eventsByDay.get(mDay));
 		}
 		else if ( bDate.getYearDay() == selectedDate.getYearDay() && bDate.getYear() == selectedDate.getYear() ) {
-			mDayBox = (MonthDayBox) v.findViewById(R.id.DayBoxOutMonthHighlighted);
+			mDayBox = (MonthDayBox) inflater.inflate(R.layout.month_view_outmonth_highlight, null);
 			textScaleFactor = 0.55f;
 			mDayBox.setSelected();
 		} else {
-			mDayBox = (MonthDayBox) v.findViewById(R.id.DayBoxOutMonth);
+			mDayBox = (MonthDayBox) inflater.inflate(R.layout.month_view_outmonth, null);
 			textScaleFactor = 0.5f;
 		}
 		if ( today.getYearDay() == bDate.getYearDay() && today.getYear() == bDate.getYear() ) {
@@ -300,13 +291,11 @@ public class MonthAdapter extends BaseAdapter implements CacheChangedListener, C
 			mDayBox.setTextSize( TypedValue.COMPLEX_UNIT_PX, textScaleFactor * boxScaleFactor * (float) boxHeight);
 		}
 		
-		mDayBox.setVisibility(View.VISIBLE);
 		mDayBox.setDate(bDate.clone());
-		
-		v.setTag(bDate);
-		v.setOnClickListener(new MonthButtonListener());
-		v.setOnTouchListener(this.context);
-		return v;
+		mDayBox.setTag(bDate);
+		mDayBox.setOnClickListener(new MonthButtonListener());
+		mDayBox.setOnTouchListener(this.context);
+		return mDayBox;
 	}
 	
 			
